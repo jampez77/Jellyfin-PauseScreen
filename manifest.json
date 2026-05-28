@@ -1,0 +1,21 @@
+[
+  {
+    "category": "General",
+    "description": "Loads an existing PauseScreen JavaScript file in Jellyfin Web clients without modifying Jellyfin Web files.",
+    "guid": "f2296cc1-6a2f-47b0-a4f8-7ea953617fe6",
+    "name": "Jellyfin-PauseScreen",
+    "overview": "A pause screen for jellyfin that adds the logo and the disc and the description when paused that dissapears when playback is resumed or the video is exited.",
+    "imageUrl": "https://raw.githubusercontent.com/BobHasNoSoul/Jellyfin-PauseScreen/refs/heads/main/logo/logo.png",
+    "owner": "local",
+    "versions": [
+      {
+        "changelog": "Initial release.",
+        "checksum": "d1a7ba4846b1ab5420495391752ea6ee",
+        "sourceUrl": "https://github.com/BobHasNoSoul/Jellyfin-PauseScreen/raw/refs/heads/main/dist/Jellyfin-PauseScreen_1.0.0.0.zip",
+        "targetAbi": "10.11.0.0",
+        "timestamp": "2026-05-28T00:00:00Z",
+        "version": "1.0.0.0"
+      }
+    ]
+  }
+]

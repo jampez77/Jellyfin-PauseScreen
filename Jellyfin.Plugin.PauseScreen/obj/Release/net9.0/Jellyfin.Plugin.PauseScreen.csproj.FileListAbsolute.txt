@@ -1,0 +1,14 @@
+/src/Jellyfin.Plugin.PauseScreen/bin/Release/net9.0/Jellyfin.Plugin.PauseScreen.deps.json
+/src/Jellyfin.Plugin.PauseScreen/bin/Release/net9.0/Jellyfin.Plugin.PauseScreen.dll
+/src/Jellyfin.Plugin.PauseScreen/bin/Release/net9.0/Jellyfin.Plugin.PauseScreen.pdb
+/src/Jellyfin.Plugin.PauseScreen/bin/Release/net9.0/Jellyfin.Plugin.PauseScreen.xml
+/src/Jellyfin.Plugin.PauseScreen/obj/Release/net9.0/Jellyfin.Plugin.PauseScreen.csproj.AssemblyReference.cache
+/src/Jellyfin.Plugin.PauseScreen/obj/Release/net9.0/Jellyfin.Plugin.PauseScreen.GeneratedMSBuildEditorConfig.editorconfig
+/src/Jellyfin.Plugin.PauseScreen/obj/Release/net9.0/Jellyfin.Plugin.PauseScreen.AssemblyInfoInputs.cache
+/src/Jellyfin.Plugin.PauseScreen/obj/Release/net9.0/Jellyfin.Plugin.PauseScreen.AssemblyInfo.cs
+/src/Jellyfin.Plugin.PauseScreen/obj/Release/net9.0/Jellyfin.Plugin.PauseScreen.csproj.CoreCompileInputs.cache
+/src/Jellyfin.Plugin.PauseScreen/obj/Release/net9.0/Jellyfin.Plugin.PauseScreen.dll
+/src/Jellyfin.Plugin.PauseScreen/obj/Release/net9.0/refint/Jellyfin.Plugin.PauseScreen.dll
+/src/Jellyfin.Plugin.PauseScreen/obj/Release/net9.0/Jellyfin.Plugin.PauseScreen.xml
+/src/Jellyfin.Plugin.PauseScreen/obj/Release/net9.0/Jellyfin.Plugin.PauseScreen.pdb
+/src/Jellyfin.Plugin.PauseScreen/obj/Release/net9.0/ref/Jellyfin.Plugin.PauseScreen.dll

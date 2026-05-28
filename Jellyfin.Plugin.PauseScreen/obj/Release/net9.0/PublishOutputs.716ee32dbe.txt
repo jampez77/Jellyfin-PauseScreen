@@ -1,0 +1,4 @@
+/src/Jellyfin.Plugin.PauseScreen/bin/Release/net9.0/publish/Jellyfin.Plugin.PauseScreen.dll
+/src/Jellyfin.Plugin.PauseScreen/bin/Release/net9.0/publish/Jellyfin.Plugin.PauseScreen.pdb
+/src/Jellyfin.Plugin.PauseScreen/bin/Release/net9.0/publish/Jellyfin.Plugin.PauseScreen.xml
+/src/Jellyfin.Plugin.PauseScreen/bin/Release/net9.0/publish/Jellyfin.Plugin.PauseScreen.deps.json
