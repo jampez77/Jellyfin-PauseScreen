@@ -19,12 +19,10 @@ https://raw.githubusercontent.com/jampez77/Jellyfin-PauseScreen/main/manifest.js
 Basically it is able to pick the items logo and the items plot and then from there also grab the items disc and put them on the screen when paused. It does however have fallbacks so lets say you dont put a disc for every item, thats fine it will go to season and then if there isnt one there it will get the series disc image, same for the logo.. the only thing i didnt do like that is the plot.. because that could go very badly.
 
 
-![vlcsnap-2025-03-07-18h57m35s122](https://github.com/user-attachments/assets/c449b0ed-f0c7-438b-b2a0-35703c3f8e16)
-![vlcsnap-2025-03-07-18h57m11s706](https://github.com/user-attachments/assets/fb28c8a1-06e4-443d-8d6c-7036f1bfa944)
-![vlcsnap-2025-03-07-18h56m56s818](https://github.com/user-attachments/assets/b73f7218-df89-409b-8970-ac2341fff2d7)
-![vlcsnap-2025-03-07-18h56m38s578](https://github.com/user-attachments/assets/b487d7d9-bc27-408b-8546-61962c32cd03)
-![vlcsnap-2025-03-07-18h56m23s810](https://github.com/user-attachments/assets/3edc7e02-895e-4495-9a5e-ebd8a3516d64)
-
+<img width="1721" height="869" alt="Screenshot 2026-06-02 at 14 26 12" src="https://github.com/user-attachments/assets/e587a512-b541-433c-9f9e-79f8d45a48e0" />
+<img width="1722" height="870" alt="Screenshot 2026-06-02 at 14 26 47" src="https://github.com/user-attachments/assets/5588b268-2c74-4ea6-8fb1-4e80b57cce9d" />
+<img width="1720" height="872" alt="Screenshot 2026-06-02 at 14 26 36" src="https://github.com/user-attachments/assets/17e5836c-3c65-48ea-bf8f-6d991e7e8c9b" />
+<img width="1724" height="873" alt="Screenshot 2026-06-02 at 14 26 22" src="https://github.com/user-attachments/assets/8dc47df0-2d35-4b92-83bd-6b4bf855e732" />
 
 ### With Disc
 
