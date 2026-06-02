@@ -3,7 +3,7 @@
   "assemblies": [
     "Jellyfin.Plugin.PauseScreen.dll"
   ],
-  "changelog": "Initial release. Serves and injects `pausescreen.js` into Jellyfin.",
+  "changelog": "Improved styling for the pause screen and added support for displaying the channel information when watching live TV.",
   "description": "Loads an existing PauseScreen JavaScript file in Jellyfin Web clients without modifying Jellyfin Web files.",
   "guid": "f2296cc1-6a2f-47b0-a4f8-7ea953617fe6",
   "name": "Jellyfin-PauseScreen",
@@ -11,5 +11,5 @@
   "owner": "local",
   "targetAbi": "10.11.0.0",
   "timestamp": "2026-05-28T00:00:00Z",
-  "version": "1.0.0.0"
+  "version": "1.1.0.0"
 }

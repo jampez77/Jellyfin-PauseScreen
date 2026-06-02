@@ -1,12 +1,14 @@
 (function() {
     let currentVideo = null;
     let currentItemId = null;
+    let currentType = null; // "item" | "channel"
     let userId = null;
     let token = null;
-    let lastItemIdCheck = 0;
     let cleanupListeners = null;
+    let renderGeneration = 0;
 
-    // Create overlay with all styling
+    // ---------------- UI SETUP (UNCHANGED) ----------------
+
     const overlay = document.createElement("div");
     overlay.id = "video-overlay";
     overlay.style.cssText = `
@@ -24,74 +26,36 @@
     `;
 
     const overlayContent = document.createElement("div");
-    overlayContent.id = "overlay-content";
-    overlayContent.style.cssText = "display: flex; align-items: center; justify-content: center; text-align: center;";
+    overlayContent.style.cssText = "display: flex; align-items: center; justify-content: center; text-align: center; padding: 2vw;";
 
     const overlayLogo = document.createElement("img");
-    overlayLogo.id = "overlay-logo";
     overlayLogo.style.cssText = "width: 50vw; height: auto; margin-right: 50vw; display: none;";
 
     const overlayPlot = document.createElement("div");
-    overlayPlot.id = "overlay-plot";
-    overlayPlot.style.cssText = "top: 38vh; max-width: 40%; height: 50vh; display: block; right: 5vw; position: absolute;";
 
     const overlayDetails = document.createElement("div");
-    overlayDetails.id = "overlay-details";
-    overlayDetails.style.cssText = "position: absolute; top: 55%; left: 19vw; margin-left: 12vw; transform: translateX(-50%); width: 50vw; font-size: 22px; font-weight: bold; display: flex; justify-content: center; gap: 30px; font-family: inherit;";
+    overlayDetails.style.cssText = "position: absolute; top: 55%; left: 19vw; margin-left: 12vw; transform: translateX(-50%); width: 50vw; font-size: 22px; font-weight: bold; display: flex; justify-content: center; gap: 30px;";
 
     overlayContent.appendChild(overlayLogo);
     overlayContent.appendChild(overlayPlot);
     overlay.appendChild(overlayContent);
     overlay.appendChild(overlayDetails);
 
-    const overlayDisc = document.createElement("img");
-    overlayDisc.id = "overlay-disc";
-    overlayDisc.style.cssText = `
-        position: absolute;
-        top: 5vh;
-        right: 4vw;
-        width: 10vw;
-        height: auto;
-        display: none;
-        animation: spin 10s linear infinite;
-    `;
-    overlay.appendChild(overlayDisc);
-
-    const discStyle = document.createElement("style");
-    discStyle.textContent = `
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-    `;
-    document.head.appendChild(discStyle);
-
     document.body.appendChild(overlay);
 
-    const styleOverride = document.createElement("style");
-    styleOverride.textContent = `
-        .videoOsdBottom {
-            z-index: 1 !important;
-        }
-        video {
-            z-index: -1 !important;
-        }
-    `;
-    document.head.appendChild(styleOverride);
-
-    // Click handler for overlay
-    overlay.addEventListener('click', function(event) {
-        if (event.target === overlay) {
+    overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) {
             overlay.style.display = "none";
-            if (currentVideo && currentVideo.paused) {
-                currentVideo.play();
-            }
+            currentVideo?.paused && currentVideo.play();
         }
     });
+
+    // ---------------- AUTH ----------------
 
     const getCredentials = () => {
         const creds = localStorage.getItem("jellyfin_credentials");
         if (!creds) return null;
+
         try {
             const parsed = JSON.parse(creds);
             const server = parsed.Servers[0];
@@ -101,216 +65,445 @@
         }
     };
 
-    const clearDisplayData = () => {
+    // ---------------- HELPERS ----------------
+
+    const clearDisplay = () => {
         overlayPlot.textContent = "";
         overlayDetails.innerHTML = "";
         overlayLogo.src = "";
         overlayLogo.style.display = "none";
-        overlayDisc.src = "";
-        overlayDisc.style.display = "none";
     };
 
-    const fetchItemInfo = async (itemId) => {
-        clearDisplayData(); // Clear old data before fetching new
+    const api = async (path) => {
+        const res = await fetch(`${window.location.origin}${path}`, {
+            headers: { "X-Emby-Token": token }
+        });
+        return res.ok ? res.json() : null;
+    };
 
-        try {
-            const domain = window.location.origin;
+    const resolveLogo = async (entity) => {
+        const base = window.location.origin;
 
-            // First fetch basic item info
-            const itemResp = await fetch(`${domain}/Items/${itemId}`, {
-                headers: { "X-Emby-Token": token }
-            });
-            const item = await itemResp.json();
+        const isChannel = entity.Number !== undefined || entity.Type === "TvChannel";
 
-            // Get Year, Rating, and Runtime
-            const year = item.ProductionYear || "";
-            const rating = item.OfficialRating || "";
-            let runtime = "";
+        const urls = isChannel
+            ? [
+                `${base}/Items/${entity.Id}/Images/Primary`,
+                `${base}/Items/${entity.Id}/Images/Logo`,
+                `${base}/Items/${entity.Id}/Images/Thumb`
+            ]
+            : [
+                `${base}/Items/${entity.Id}/Images/Logo`,
+                `${base}/Items/${entity.Id}/Images/Primary`,
+                entity.SeriesId ? `${base}/Items/${entity.SeriesId}/Images/Logo` : null,
+                entity.ParentId ? `${base}/Items/${entity.ParentId}/Images/Logo` : null,
+                entity.SeriesId ? `${base}/Items/${entity.SeriesId}/Images/Thumb` : null,
+                entity.ParentId ? `${base}/Items/${entity.ParentId}/Images/Thumb` : null,
 
-            if (item.RunTimeTicks) {
-                const totalMinutes = Math.floor(item.RunTimeTicks / 600000000);
-                const hours = Math.floor(totalMinutes / 60);
-                const minutes = totalMinutes % 60;
-                if (hours > 0) {
-                    runtime = `${hours}h ${minutes}m`;
-                } else {
-                    runtime = `${minutes}m`;
-                }
-            }
-
-            // Display the details, using spans for separation
-            overlayDetails.innerHTML = `
-                ${year ? `<span>${year}</span>` : ''}
-                ${rating ? `<span>${rating}</span>` : ''}
-                ${runtime ? `<span>${runtime}</span>` : ''}
-            `;
-
-            overlayPlot.textContent = item.Overview || "No description available";
-
-            // Try to get logo image
-            if (item.ImageTags && item.ImageTags.Logo) {
-                overlayLogo.src = `${domain}/Items/${itemId}/Images/Logo?tag=${item.ImageTags.Logo}`;
-                overlayLogo.style.display = "block";
-            } else {
-                // Also try parent items for logo if current item doesn't have one
-                const logoUrls = [
-                    item.ParentId ? `${domain}/Items/${item.ParentId}/Images/Logo` : null,
-                    item.SeriesId ? `${domain}/Items/${item.SeriesId}/Images/Logo` : null
-                ].filter(Boolean);
-
-                for (const url of logoUrls) {
-                    try {
-                        const img = new Image();
-                        img.src = url;
-                        await new Promise((resolve, reject) => {
-                            img.onload = resolve;
-                            img.onerror = reject;
-                            setTimeout(() => reject(), 1000);
-                        });
-                        overlayLogo.src = url;
-                        overlayLogo.style.display = "block";
-                        break;
-                    } catch {
-                        continue;
-                    }
-                }
-            }
-
-            // Try disc image sources in order
-            const tryDiscImage = async (url) => {
-                try {
-                    const img = new Image();
-                    img.src = url;
-                    await new Promise((resolve, reject) => {
-                        img.onload = resolve;
-                        img.onerror = reject;
-                        setTimeout(() => reject(), 1000);
-                    });
-                    return url;
-                } catch {
-                    return null;
-                }
-            };
-
-            const discUrls = [
-                `${domain}/Items/${itemId}/Images/Disc`,
-                item.ParentId ? `${domain}/Items/${item.ParentId}/Images/Disc` : null,
-                item.SeriesId ? `${domain}/Items/${item.SeriesId}/Images/Disc` : null
             ].filter(Boolean);
 
-            for (const url of discUrls) {
-                const validUrl = await tryDiscImage(url);
-                if (validUrl) {
-                    overlayDisc.src = validUrl;
-                    overlayDisc.style.display = "block";
-                    break;
-                }
-            }
+        for (const url of urls) {
+            try {
+                const img = new Image();
+                img.src = url;
 
-        } catch (e) {
-            console.error("Error fetching item info:", e);
-            overlayPlot.textContent = "Unable to fetch item info.";
-            overlayLogo.style.display = "none";
-            overlayDisc.style.display = "none";
-        }
-    };
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                    setTimeout(reject, 800);
+                });
 
-    // Optimized item ID check
-    const checkForItemId = (force = false) => {
-        const now = Date.now();
-        if (!force && now - lastItemIdCheck < 500) {
-            return currentItemId;
-        }
-        lastItemIdCheck = now;
-
-        const selectors = [
-            '.videoOsdBottom-hidden > div:nth-child(1) > div:nth-child(4) > button:nth-child(3)',
-            'div.page:nth-child(3) > div:nth-child(3) > div:nth-child(1) > div:nth-child(4) > button:nth-child(3)',
-            '.btnUserRating'
-        ];
-
-        for (const selector of selectors) {
-            const ratingButton = document.querySelector(selector);
-            if (ratingButton && ratingButton.getAttribute('data-id')) {
-                return ratingButton.getAttribute('data-id');
+                return url;
+            } catch {
+                continue;
             }
         }
 
         return null;
     };
 
-    const attachVideoListeners = (video) => {
-        const handlePause = () => {
-            if (video === currentVideo && !video.ended) {
-                const newItemId = checkForItemId(true);
-                if (newItemId && newItemId !== currentItemId) {
-                    currentItemId = newItemId;
-                    fetchItemInfo(newItemId);
+    // ---------------- LIVE TV RESOLUTION ----------------
+
+    const getSessionNowPlaying = async () => {
+        const sessions = await api("/Sessions");
+        if (!sessions) return null;
+
+        const session = sessions.find(s => s.NowPlayingItem);
+        return session?.NowPlayingItem || null;
+    };
+
+    const getChannelFromItem = async (item) => {
+        if (!item?.ChannelId && item?.Type !== "TvChannel") return null;
+
+        const channels = await api("/LiveTv/Channels");
+        return channels?.Items?.find(c =>
+            c.Id === item.ChannelId || c.Id === item.Id
+        ) || null;
+    };
+
+    const getCurrentProgram = async (channelId) => {
+        const data = await api(
+            `/LiveTv/Programs?ChannelIds=${channelId}&IsAiring=true&Fields=Name,Overview,ShortOverview,Description,StartDate,EndDate`
+        );
+
+        return data?.Items?.[0] || null;
+    };
+
+    // ---------------- ITEM RENDER ----------------
+
+    const renderItem = async (item) => {
+        currentType = "item";
+        currentItemId = item.Id;
+
+        const isEpisode = item.Type === "Episode";
+
+        const title = item.SeriesName || item.Name || "Unknown Title";
+
+        const episodeTitle = item.Name || "";
+
+        const season = item.ParentIndexNumber ?? item.SeasonNumber;
+        const episode = item.IndexNumber ?? item.EpisodeNumber;
+
+        const year = item.ProductionYear;
+        const rating = item.OfficialRating;
+
+        const synopsis =
+            item.Overview ||
+            item.ShortOverview ||
+            item.Taglines?.[0] ||
+            "";
+
+        // ---------------- LEFT COLUMN ----------------
+
+        const finalLogo = await resolveLogo(item);
+
+        const leftMeta = isEpisode
+            ? `${season != null && episode != null ? `S${season}E${episode}` : ""}`
+            : `${year ? year + " • " : ""}${rating || ""}`;
+
+        const left = `
+            <div style="
+                width: 28%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            ">
+                <img src="${finalLogo}" style="
+                    width: 160px;
+                    height: auto;
+                    margin-bottom: 20px;
+                "/>
+
+                <div style="
+                    font-size: 22px;
+                    text-align: center;
+                    opacity: 0.9;
+                ">
+                    ${leftMeta}
+                </div>
+            </div>
+        `;
+
+        // ---------------- RIGHT COLUMN ----------------
+        const mainTitle = isEpisode ? (item.SeriesName || title) : title;
+
+        const subtitle = isEpisode
+            ? `${season != null && episode != null ? `S${season}E${episode} • ` : ""}${episodeTitle}`
+            : (year ? `Released ${year}` : "");
+
+        const right = `
+            <div style="
+                width: 72%;
+                padding-left: 40px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            ">
+                <div style="
+                    font-size: 34px;
+                    font-weight: 600;
+                    margin-bottom: 10px;
+                ">
+                    ${mainTitle}
+                </div>
+
+                <div style="
+                    font-size: 20px;
+                    opacity: 0.85;
+                    margin-bottom: 20px;
+                ">
+                    ${subtitle}
+                </div>
+
+                <div style="
+                    font-size: 16px;
+                    opacity: 0.8;
+                    line-height: 1.5;
+                    max-width: 90%;
+                ">
+                    ${synopsis || ""}
+                </div>
+            </div>
+        `;
+
+        // ---------------- FINAL LAYOUT ----------------
+        overlayPlot.innerHTML = `
+            <div style="
+                display: flex;
+                width: 100%;
+                height: 100%;
+                align-items: center;
+            ">
+                ${left}
+                ${right}
+            </div>
+        `;
+
+        overlayDetails.innerHTML = "";
+    };
+
+    // ---------------- CHANNEL RENDER ----------------
+
+    const renderChannel = async (channel) => {
+        const program = await getCurrentProgram(channel.Id);
+
+        const channelName = channel.Name || "Live TV";
+
+        const seriesName = program?.SeriesName || program?.Name || "";
+        const episodeTitle = program?.Name || "";
+
+        const season = program?.ParentIndexNumber ?? program?.SeasonNumber;
+        const episode = program?.IndexNumber ?? program?.EpisodeNumber;
+
+        const synopsis =
+            program?.Overview ||
+            program?.ShortOverview ||
+            program?.Description ||
+            "";
+
+        // ---------------- LEFT COLUMN (CHANNEL) ----------------
+        const finalLogo = await resolveLogo(channel);
+
+        const left = `
+            <div style="
+                width: 28%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            ">
+                <img src="${finalLogo}" style="
+                    width: 160px;
+                    height: auto;
+                    margin-bottom: 20px;
+                "/>
+
+                <div style="
+                    font-size: 22px;
+                    text-align: center;
+                    opacity: 0.9;
+                ">
+                    ${channel.Number ? channel.Number + " • " : ""}${channelName}
+                </div>
+            </div>
+        `;
+
+        // ---------------- RIGHT COLUMN (PROGRAM) ----------------
+        let subtitle = "";
+
+        if (seriesName) {
+            subtitle = seriesName;
+
+            if (season != null && episode != null) {
+                subtitle += ` — S${season}E${episode}`;
+            }
+
+            if (episodeTitle && episodeTitle !== seriesName) {
+                subtitle += ` • ${episodeTitle}`;
+            }
+        } else {
+            subtitle = episodeTitle || channelName;
+        }
+
+        const right = `
+            <div style="
+                width: 72%;
+                padding-left: 40px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            ">
+                <div style="
+                    font-size: 34px;
+                    font-weight: 600;
+                    margin-bottom: 10px;
+                ">
+                    ${seriesName}
+                </div>
+
+                <div style="
+                    font-size: 20px;
+                    opacity: 0.85;
+                    margin-bottom: 20px;
+                ">
+                    ${subtitle}
+                </div>
+
+                <div style="
+                    font-size: 16px;
+                    opacity: 0.8;
+                    line-height: 1.5;
+                    max-width: 90%;
+                ">
+                    ${synopsis || ""}
+                </div>
+            </div>
+        `;
+
+        // ---------------- FINAL LAYOUT ----------------
+        overlayPlot.innerHTML = `
+            <div style="
+                display: flex;
+                width: 100%;
+                height: 100%;
+                align-items: center;
+            ">
+                ${left}
+                ${right}
+            </div>
+        `;
+    };
+
+    // ---------------- CORE RESOLUTION ----------------
+
+    const safeRender = async () => {
+        try {
+            await resolveAndRender();
+        } catch (e) {
+            console.warn("Fatal render error", e);
+            clearState(); // <-- this is what fixes "stuck overlay"
+        }
+    };
+
+    const resolveAndRender = async () => {
+        const gen = ++renderGeneration;
+
+        try {
+            const nowPlaying = await getSessionNowPlaying();
+
+            // If a newer render started, abort
+            if (gen !== renderGeneration) return;
+
+            if (!nowPlaying) {
+                clearState();
+                return;
+            }
+
+            if (nowPlaying.Type === "TvChannel" || nowPlaying.ChannelId) {
+                const channel = await getChannelFromItem(nowPlaying);
+                if (!channel) {
+                    clearState();
+                    return;
                 }
-                overlay.style.display = "flex";
+
+                const program = await getCurrentProgram(channel.Id);
+
+                if (gen !== renderGeneration) return;
+
+                await renderChannel(channel, program);
+                return;
             }
+
+            const item = await api(`/Items/${nowPlaying.Id}`);
+            if (gen !== renderGeneration) return;
+
+            if (item) await renderItem(item);
+
+        } catch (e) {
+            console.warn("Render failed", e);
+            clearState();
+        }
+    };
+
+    // ---------------- VIDEO HOOK ----------------
+
+    const attachVideoListeners = (video) => {
+        const onPause = () => {
+            overlay.style.display = "flex";
+            safeRender();
         };
 
-        const handlePlay = () => {
-            if (video === currentVideo) {
-                overlay.style.display = "none";
-            }
+        const onPlay = () => {
+            overlay.style.display = "none";
         };
 
-        video.addEventListener("pause", handlePause);
-        video.addEventListener("play", handlePlay);
+        video.addEventListener("pause", onPause);
+        video.addEventListener("play", onPlay);
 
         return () => {
-            video.removeEventListener("pause", handlePause);
-            video.removeEventListener("play", handlePlay);
+            video.removeEventListener("pause", onPause);
+            video.removeEventListener("play", onPlay);
         };
+    };
+
+    // ---------------- ROUTE CHANGE DETECTION ----------------
+
+    let lastUrl = location.href;
+
+    const watchRouteChange = () => {
+        if (location.href !== lastUrl) {
+            lastUrl = location.href;
+            clearState();
+        }
+        requestAnimationFrame(watchRouteChange);
     };
 
     const clearState = () => {
         overlay.style.display = "none";
-        clearDisplayData();
-        if (cleanupListeners) {
-            cleanupListeners();
-            cleanupListeners = null;
-        }
+
+        overlayPlot.textContent = "";
+        overlayDetails.innerHTML = "";
+        overlayLogo.src = "";
+        overlayLogo.style.display = "none";
+
         currentItemId = null;
+        currentType = null;
         currentVideo = null;
     };
 
-    const scanLoop = async () => {
+    // ---------------- LOOP ----------------
+
+    const scanLoop = () => {
         const video = document.querySelector(".videoPlayerContainer video");
-        const itemId = checkForItemId();
 
-        if (video && video !== currentVideo) {
-            clearState();
-            currentVideo = video;
-            cleanupListeners = attachVideoListeners(video);
-
-            const newItemId = checkForItemId(true);
-            if (newItemId) {
-                currentItemId = newItemId;
-                await fetchItemInfo(newItemId);
-            }
-        }
-
-        if (video && itemId && itemId !== currentItemId) {
-            currentItemId = itemId;
-            await fetchItemInfo(itemId);
-        }
-
+        // NEW: if video disappears, always reset
         if (!video && currentVideo) {
             clearState();
+            currentVideo = null;
+            currentItemId = null;
+        }
+
+        if (video && video !== currentVideo) {
+            currentVideo = video;
+
+            cleanupListeners?.();
+            cleanupListeners = attachVideoListeners(video);
+
+            safeRender();
         }
 
         requestAnimationFrame(scanLoop);
     };
 
-    // Initialize
+    // ---------------- INIT ----------------
+
     const creds = getCredentials();
     if (!creds) {
         console.error("Jellyfin credentials not found");
         return;
     }
+
     userId = creds.userId;
     token = creds.token;
 

@@ -13,7 +13,7 @@ A pause screen for jellyfin that adds the logo and the disc and the description 
 ## Manifest URL
 
 ```
-https://raw.githubusercontent.com/BobHasNoSoul/Jellyfin-PauseScreen/main/manifest.json
+https://raw.githubusercontent.com/jampez77/Jellyfin-PauseScreen/main/manifest.json
 ```
 
 Basically it is able to pick the items logo and the items plot and then from there also grab the items disc and put them on the screen when paused. It does however have fallbacks so lets say you dont put a disc for every item, thats fine it will go to season and then if there isnt one there it will get the series disc image, same for the logo.. the only thing i didnt do like that is the plot.. because that could go very badly.
