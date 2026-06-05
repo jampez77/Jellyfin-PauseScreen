@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Jellyfin.Plugin.PauseScreen</name>
+    </assembly>
+    <members>
+        <member name="T:Jellyfin.Plugin.PauseScreen.Configuration.PluginConfiguration">
+            <summary>
+            Configuration for the Jellyfin-PauseScreen plugin.
+            </summary>
+        </member>
+        <member name="T:Jellyfin.Plugin.PauseScreen.Controllers.PauseScreenController">
+            <summary>
+            Serves the embedded PauseScreen JavaScript asset.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Plugin.PauseScreen.Controllers.PauseScreenController.GetScript">
+            <summary>
+            Gets the PauseScreen client script.
+            </summary>
+            <returns>The embedded JavaScript file.</returns>
+        </member>
+        <member name="T:Jellyfin.Plugin.PauseScreen.Plugin">
+            <summary>
+            Jellyfin plugin entry point.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Plugin.PauseScreen.Plugin.#ctor(MediaBrowser.Common.Configuration.IApplicationPaths,MediaBrowser.Model.Serialization.IXmlSerializer)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Plugin.PauseScreen.Plugin"/> class.
+            </summary>
+            <param name="applicationPaths">Jellyfin application paths.</param>
+            <param name="xmlSerializer">Jellyfin XML serializer.</param>
+        </member>
+        <member name="P:Jellyfin.Plugin.PauseScreen.Plugin.Instance">
+            <summary>
+            Gets the active plugin instance.
+            </summary>
+        </member>
+        <member name="P:Jellyfin.Plugin.PauseScreen.Plugin.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.Plugin.PauseScreen.Plugin.Id">
+            <inheritdoc />
+        </member>
+        <member name="P:Jellyfin.Plugin.PauseScreen.Plugin.Description">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Plugin.PauseScreen.PluginServiceRegistrator">
+            <summary>
+            Registers web injection services with Jellyfin.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Plugin.PauseScreen.PluginServiceRegistrator.RegisterServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,MediaBrowser.Controller.IServerApplicationHost)">
+            <inheritdoc />
+        </member>
+        <member name="T:Jellyfin.Plugin.PauseScreen.Web.PauseScreenInjectionMiddleware">
+            <summary>
+            Injects the PauseScreen script tag into Jellyfin Web HTML responses without changing files on disk.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Plugin.PauseScreen.Web.PauseScreenInjectionMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Jellyfin.Plugin.PauseScreen.Web.PauseScreenInjectionMiddleware"/> class.
+            </summary>
+            <param name="next">The next middleware in the request pipeline.</param>
+        </member>
+        <member name="M:Jellyfin.Plugin.PauseScreen.Web.PauseScreenInjectionMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Handles the current HTTP request.
+            </summary>
+            <param name="context">The HTTP context.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+        </member>
+        <member name="T:Jellyfin.Plugin.PauseScreen.Web.PauseScreenStartupFilter">
+            <summary>
+            Adds PauseScreen HTML injection middleware to Jellyfin's request pipeline.
+            </summary>
+        </member>
+        <member name="M:Jellyfin.Plugin.PauseScreen.Web.PauseScreenStartupFilter.Configure(System.Action{Microsoft.AspNetCore.Builder.IApplicationBuilder})">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>
