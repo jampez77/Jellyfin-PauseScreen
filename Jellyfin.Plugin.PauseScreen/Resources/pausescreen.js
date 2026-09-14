@@ -74,9 +74,15 @@
         overlayLogo.style.display = "none";
     };
 
+    const getAuthHeaders = () => ({
+        "X-Emby-Token": token,
+        "X-MediaBrowser-Token": token,
+        "Authorization": `MediaBrowser Client="Jellyfin-PauseScreen", Device="Jellyfin Web", DeviceId="jellyfin-pausescreen-web", Version="1.1.0.0", Token="${token}"`
+    });
+
     const api = async (path) => {
         const res = await fetch(`${window.location.origin}${path}`, {
-            headers: { "X-Emby-Token": token }
+            headers: getAuthHeaders()
         });
         return res.ok ? res.json() : null;
     };
@@ -396,7 +402,8 @@
             if (gen !== renderGeneration) return;
 
             if (!nowPlaying) {
-                clearState();
+                overlay.style.display = "none";
+                clearDisplay();
                 return;
             }
 

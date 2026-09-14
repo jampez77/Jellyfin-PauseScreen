@@ -9,9 +9,9 @@
     "owner": "local",
     "versions": [
       {
-        "changelog": "Initial release.",
-        "checksum": "DCC6EE872FB1971B11085EBA43E25981",
-        "sourceUrl": "https://github.com/jampez77/Jellyfin-PauseScreen/raw/refs/heads/main/dist/Jellyfin-PauseScreen_1.1.0.0.zip",
+        "changelog": "Fix Jellyfin 12 API authentication for session lookups.",
+        "checksum": "573DDF5959D96467B482E80DBA90BE3B",
+        "sourceUrl": "https://github.com/jampez77/Jellyfin-PauseScreen/releases/download/v1.1.0.0/Jellyfin-PauseScreen_1.1.0.0.zip",
         "targetAbi": "10.11.0.0",
         "timestamp": "2026-05-28T00:00:00Z",
         "version": "1.1.0.0"

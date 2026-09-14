@@ -3,7 +3,7 @@
   "assemblies": [
     "Jellyfin.Plugin.PauseScreen.dll"
   ],
-  "changelog": "Improved styling for the pause screen and added support for displaying the channel information when watching live TV.",
+  "changelog": "Fix Jellyfin 12 API authentication for session lookups.",
   "description": "Loads an existing PauseScreen JavaScript file in Jellyfin Web clients without modifying Jellyfin Web files.",
   "guid": "f2296cc1-6a2f-47b0-a4f8-7ea953617fe6",
   "name": "Jellyfin-PauseScreen",
