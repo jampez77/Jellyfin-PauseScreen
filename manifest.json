@@ -9,6 +9,14 @@
     "owner": "local",
     "versions": [
       {
+        "changelog": "Use ES2017-compatible JavaScript for LG webOS 5.x/6.x while retaining the Jellyfin 12 authentication fix.",
+        "checksum": "DA20F78DE24D771994D4B43F57F3FD29",
+        "sourceUrl": "https://github.com/jampez77/Jellyfin-PauseScreen/releases/download/v1.1.1.0/Jellyfin-PauseScreen_1.1.1.0.zip",
+        "targetAbi": "10.11.0.0",
+        "timestamp": "2026-09-21T17:02:50Z",
+        "version": "1.1.1.0"
+      },
+      {
         "changelog": "Fix Jellyfin 12 API authentication for session lookups.",
         "checksum": "573DDF5959D96467B482E80DBA90BE3B",
         "sourceUrl": "https://github.com/jampez77/Jellyfin-PauseScreen/releases/download/v1.1.0.0/Jellyfin-PauseScreen_1.1.0.0.zip",

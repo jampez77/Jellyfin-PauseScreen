@@ -3,13 +3,13 @@
   "assemblies": [
     "Jellyfin.Plugin.PauseScreen.dll"
   ],
-  "changelog": "Fix Jellyfin 12 API authentication for session lookups.",
+  "changelog": "Use ES2017-compatible JavaScript for LG webOS 5.x/6.x while retaining the Jellyfin 12 authentication fix.",
   "description": "Loads an existing PauseScreen JavaScript file in Jellyfin Web clients without modifying Jellyfin Web files.",
   "guid": "f2296cc1-6a2f-47b0-a4f8-7ea953617fe6",
   "name": "Jellyfin-PauseScreen",
   "overview": "PauseScreen for Jellyfin Web.",
   "owner": "local",
   "targetAbi": "10.11.0.0",
-  "timestamp": "2026-05-28T00:00:00Z",
-  "version": "1.1.0.0"
+  "timestamp": "2026-09-21T17:02:50Z",
+  "version": "1.1.1.0"
 }

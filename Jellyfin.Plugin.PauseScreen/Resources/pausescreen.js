@@ -1,4 +1,5 @@
 (function() {
+    // Keep this embedded script ES2017-compatible for older LG webOS engines.
     let currentVideo = null;
     let currentItemId = null;
     let currentType = null; // "item" | "channel"
@@ -46,7 +47,7 @@
     overlay.addEventListener("click", (e) => {
         if (e.target === overlay) {
             overlay.style.display = "none";
-            currentVideo?.paused && currentVideo.play();
+            if (currentVideo && currentVideo.paused) currentVideo.play();
         }
     });
 
@@ -60,7 +61,7 @@
             const parsed = JSON.parse(creds);
             const server = parsed.Servers[0];
             return { token: server.AccessToken, userId: server.UserId };
-        } catch {
+        } catch (e) {
             return null;
         }
     };
@@ -77,7 +78,7 @@
     const getAuthHeaders = () => ({
         "X-Emby-Token": token,
         "X-MediaBrowser-Token": token,
-        "Authorization": `MediaBrowser Client="Jellyfin-PauseScreen", Device="Jellyfin Web", DeviceId="jellyfin-pausescreen-web", Version="1.1.0.0", Token="${token}"`
+        "Authorization": `MediaBrowser Client="Jellyfin-PauseScreen", Device="Jellyfin Web", DeviceId="jellyfin-pausescreen-web", Version="1.1.1.0", Token="${token}"`
     });
 
     const api = async (path) => {
@@ -120,7 +121,7 @@
                 });
 
                 return url;
-            } catch {
+            } catch (e) {
                 continue;
             }
         }
@@ -135,16 +136,16 @@
         if (!sessions) return null;
 
         const session = sessions.find(s => s.NowPlayingItem);
-        return session?.NowPlayingItem || null;
+        return (session && session.NowPlayingItem) || null;
     };
 
     const getChannelFromItem = async (item) => {
-        if (!item?.ChannelId && item?.Type !== "TvChannel") return null;
+        if (!item || (!item.ChannelId && item.Type !== "TvChannel")) return null;
 
         const channels = await api("/LiveTv/Channels");
-        return channels?.Items?.find(c =>
+        return (channels && channels.Items && channels.Items.find(c =>
             c.Id === item.ChannelId || c.Id === item.Id
-        ) || null;
+        )) || null;
     };
 
     const getCurrentProgram = async (channelId) => {
@@ -152,7 +153,7 @@
             `/LiveTv/Programs?ChannelIds=${channelId}&IsAiring=true&Fields=Name,Overview,ShortOverview,Description,StartDate,EndDate`
         );
 
-        return data?.Items?.[0] || null;
+        return (data && data.Items && data.Items[0]) || null;
     };
 
     // ---------------- ITEM RENDER ----------------
@@ -167,8 +168,8 @@
 
         const episodeTitle = item.Name || "";
 
-        const season = item.ParentIndexNumber ?? item.SeasonNumber;
-        const episode = item.IndexNumber ?? item.EpisodeNumber;
+        const season = item.ParentIndexNumber != null ? item.ParentIndexNumber : item.SeasonNumber;
+        const episode = item.IndexNumber != null ? item.IndexNumber : item.EpisodeNumber;
 
         const year = item.ProductionYear;
         const rating = item.OfficialRating;
@@ -176,7 +177,7 @@
         const synopsis =
             item.Overview ||
             item.ShortOverview ||
-            item.Taglines?.[0] ||
+            (item.Taglines && item.Taglines[0]) ||
             "";
 
         // ---------------- LEFT COLUMN ----------------
@@ -272,20 +273,20 @@
     // ---------------- CHANNEL RENDER ----------------
 
     const renderChannel = async (channel) => {
-        const program = await getCurrentProgram(channel.Id);
+        const program = await getCurrentProgram(channel.Id) || {};
 
         const channelName = channel.Name || "Live TV";
 
-        const seriesName = program?.SeriesName || program?.Name || "";
-        const episodeTitle = program?.Name || "";
+        const seriesName = program.SeriesName || program.Name || "";
+        const episodeTitle = program.Name || "";
 
-        const season = program?.ParentIndexNumber ?? program?.SeasonNumber;
-        const episode = program?.IndexNumber ?? program?.EpisodeNumber;
+        const season = program.ParentIndexNumber != null ? program.ParentIndexNumber : program.SeasonNumber;
+        const episode = program.IndexNumber != null ? program.IndexNumber : program.EpisodeNumber;
 
         const synopsis =
-            program?.Overview ||
-            program?.ShortOverview ||
-            program?.Description ||
+            program.Overview ||
+            program.ShortOverview ||
+            program.Description ||
             "";
 
         // ---------------- LEFT COLUMN (CHANNEL) ----------------
@@ -494,7 +495,7 @@
         if (video && video !== currentVideo) {
             currentVideo = video;
 
-            cleanupListeners?.();
+            if (cleanupListeners) cleanupListeners();
             cleanupListeners = attachVideoListeners(video);
 
             safeRender();
